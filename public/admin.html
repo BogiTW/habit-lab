@@ -1175,6 +1175,13 @@
         // 從本地存儲獲取用戶數據
         const users = JSON.parse(localStorage.getItem('habitLabUsers') || '[]');
         
+        // 按提交時間排序用戶數據（從新到舊）
+        users.sort((a, b) => {
+            const dateA = new Date(a.submitTime || 0);
+            const dateB = new Date(b.submitTime || 0);
+            return dateB - dateA; // 降序排列，最新的數據在最上面
+        });
+        
         // 更新儀表板統計數據
         updateDashboardStats(users);
         
@@ -1433,6 +1440,13 @@
             });
         }
         
+        // 按提交時間排序用戶數據（從新到舊）
+        users.sort((a, b) => {
+            const dateA = new Date(a.submitTime || 0);
+            const dateB = new Date(b.submitTime || 0);
+            return dateB - dateA; // 降序排列，最新的數據在最上面
+        });
+        
         // 更新用戶表格
         updateUserTable(users);
     }
@@ -1442,15 +1456,40 @@
         // 從本地存儲獲取用戶數據
         const users = JSON.parse(localStorage.getItem('habitLabUsers') || '[]');
         
-        // 處理用戶數據成表格格式
+        // 按提交時間排序用戶數據（從新到舊）
+        users.sort((a, b) => {
+            const dateA = new Date(a.submitTime || 0);
+            const dateB = new Date(b.submitTime || 0);
+            return dateB - dateA; // 降序排列，最新的數據在最上面
+        });
+        
+        // 處理用戶數據成表格格式（增加更詳細的資訊）
         const tableData = users.map(user => {
+            // 獲取用戶的答案信息
+            const answersText = user.answers && user.answers.length > 0 
+                ? user.answers.map(answer => {
+                    const questionText = answer.questionText || '';
+                    const optionsText = answer.options && answer.options.length > 0
+                        ? answer.options.map(opt => {
+                            let text = opt.text || '';
+                            if (opt.customText) text += ` (${opt.customText})`;
+                            if (opt.tags && opt.tags.length > 0) text += ` [${opt.tags.join(', ')}]`;
+                            return text;
+                        }).join('; ')
+                        : '無選項';
+                    return `${questionText}: ${optionsText}`;
+                }).join('\n')
+                : '無回答記錄';
+            
             return {
                 "用戶ID": user.id,
                 "姓名": user.name,
                 "手機號碼": user.phone,
                 "填寫時間": user.submitTime,
                 "習慣數量": user.habits ? user.habits.length : 0,
-                "首選類別": getCategoryDisplayName(user.primaryCategory)
+                "首選類別": getCategoryDisplayName(user.primaryCategory),
+                "答案摘要": answersText.substring(0, 255) + (answersText.length > 255 ? '...' : ''),
+                "提交時間(毫秒)": new Date(user.submitTime).getTime() || 0
             };
         });
         
@@ -1461,19 +1500,40 @@
         const ws = XLSX.utils.json_to_sheet(tableData);
         XLSX.utils.book_append_sheet(wb, ws, "用戶列表");
         
-        // 創建所有習慣工作表
+        // 創建所有習慣工作表（增加更多欄位）
         const habitsData = [];
         users.forEach(user => {
             if (user.habits && user.habits.length > 0) {
                 user.habits.forEach(habit => {
+                    // 嘗試從習慣或答案中提取項目編號
+                    let itemNumber = '';
+                    const numberMatch = habit.name.match(/^(\d+)\./);
+                    if (numberMatch) {
+                        itemNumber = numberMatch[1];
+                    }
+                    
+                    // 提取標籤
+                    let tags = habit.tags && habit.tags.length > 0 ? habit.tags.join(', ') : '';
+                    if (!tags) {
+                        // 嘗試從習慣名稱中提取標籤
+                        const tagMatches = habit.name.match(/<([^>]+)>/g);
+                        if (tagMatches) {
+                            tags = tagMatches.map(tag => tag.substring(1, tag.length - 1)).join(', ');
+                        }
+                    }
+                    
                     habitsData.push({
                         "用戶ID": user.id,
                         "用戶姓名": user.name,
-                        "習慣名稱": habit.name, // 直接使用帶標籤的名稱格式
+                        "手機號碼": user.phone,
+                        "填寫時間": user.submitTime,
+                        "項目編號": itemNumber,
+                        "習慣名稱": habit.name,
+                        "習慣名稱(無標籤)": habit.name.replace(/<[^>]+>/g, '').trim(),
                         "習慣類別": getCategoryDisplayName(habit.category),
-                        "詳細描述": habit.description,
-                        "頻率": habit.frequency,
-                        "標籤": habit.tags ? habit.tags.join(', ') : ''
+                        "詳細描述": habit.description || '',
+                        "標籤": tags,
+                        "原始類別": habit.category || ''
                     });
                 });
             }
@@ -1482,6 +1542,36 @@
         if (habitsData.length > 0) {
             const wsHabits = XLSX.utils.json_to_sheet(habitsData);
             XLSX.utils.book_append_sheet(wb, wsHabits, "所有習慣");
+        }
+        
+        // 創建用戶回答工作表（新增）
+        const answersData = [];
+        users.forEach(user => {
+            if (user.answers && user.answers.length > 0) {
+                user.answers.forEach(answer => {
+                    if (answer.options && answer.options.length > 0) {
+                        answer.options.forEach(option => {
+                            answersData.push({
+                                "用戶ID": user.id,
+                                "用戶姓名": user.name,
+                                "手機號碼": user.phone,
+                                "填寫時間": user.submitTime,
+                                "問題": answer.questionText || '',
+                                "問題索引": answer.questionIndex || 0,
+                                "回答選項": option.text || '',
+                                "自定義文字": option.customText || '',
+                                "標籤": option.tags && option.tags.length > 0 ? option.tags.join(', ') : '',
+                                "類別": user.primaryCategory || ''
+                            });
+                        });
+                    }
+                });
+            }
+        });
+        
+        if (answersData.length > 0) {
+            const wsAnswers = XLSX.utils.json_to_sheet(answersData);
+            XLSX.utils.book_append_sheet(wb, wsAnswers, "用戶回答");
         }
         
         // 生成Excel文件並下載
