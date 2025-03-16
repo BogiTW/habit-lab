@@ -3,6 +3,7 @@
     {
       "id": 1,
       "title": "生活習慣（平日的習慣）",
+      "category": "lifestyle",
       "sections": [
         {
           "title": "個人衛生",
@@ -33,6 +34,7 @@
     {
       "id": 2,
       "title": "睡眠習慣",
+      "category": "sleep",
       "options": [
         "幾點睡覺 [文字說明：ex.晚上11點、不固定]",
         "要抱抱睡",
@@ -47,6 +49,7 @@
     {
       "id": 3,
       "title": "飲食習慣",
+      "category": "food",
       "sections": [
         {
           "title": "個人飲食要求",
@@ -90,7 +93,7 @@
           ]
         },
         {
-          "title": "其他飲食習慣",
+          "title": "其他相關習慣",
           "options": [
             "不吃的食物 [文字說明]",
             "愛做菜",
@@ -103,6 +106,7 @@
     {
       "id": 4,
       "title": "休閒習慣",
+      "category": "leisure",
       "sections": [
         {
           "title": "戶外",
@@ -127,6 +131,7 @@
     {
       "id": 5,
       "title": "運動習慣",
+      "category": "fitness",
       "sections": [
         {
           "title": "極限運動",
@@ -165,6 +170,7 @@
     {
       "id": 6,
       "title": "理財與消費習慣",
+      "category": "finance",
       "options": [
         "目標 [文字說明]",
         "存錢",
@@ -175,7 +181,8 @@
     },
     {
       "id": 7,
-      "title": "情侶互動相處",
+      "title": "情侶互動習慣",
+      "category": "couple",
       "options": [
         "愛抱抱-熊抱",
         "愛抱抱-摟腰",
@@ -189,6 +196,7 @@
     {
       "id": 8,
       "title": "人際相處習慣",
+      "category": "social",
       "options": [
         "常常與朋友聊天相處",
         "跟朋友只要保持聯繫就好",
@@ -198,6 +206,7 @@
     {
       "id": 9,
       "title": "價值觀跟信念",
+      "category": "values",
       "options": [
         "宗教信仰-佛教",
         "宗教信仰-基督教",
@@ -209,7 +218,8 @@
     },
     {
       "id": 10,
-      "title": "想直接文字填寫",
+      "title": "其他習慣自由填寫",
+      "category": "lifestyle",
       "text_only": true
     }
   ]
