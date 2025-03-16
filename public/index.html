@@ -384,7 +384,8 @@
         }
         
         /* 類別列居中顯示 */
-        .habits-table td:first-child {
+        .habits-table td:first-child,
+        .habits-table th:first-child {
             text-align: center;
         }
         
@@ -566,6 +567,20 @@
         /* 確保表格中的單元格內容垂直居中 */
         .habits-table td {
             vertical-align: middle;
+        }
+        
+        /* 表格列寬調整 */
+        .habits-table th:nth-child(1) { width: 15%; }  /* 類別 */
+        .habits-table th:nth-child(2) { width: 10%; }  /* 項目 */
+        .habits-table th:nth-child(3) { width: 25%; }  /* 習慣名稱 */
+        .habits-table th:nth-child(4) { width: 30%; }  /* 詳細描述 */
+        .habits-table th:nth-child(5) { width: 20%; }  /* 標籤 */
+        
+        /* 項目欄位置中 */
+        .habits-table td:nth-child(2) {
+            text-align: center;
+            color: #e83e8c;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -769,7 +784,7 @@
         </div>
         
         <div style="text-align: center; margin-top: 30px;">
-            <button class="btn" onclick="showPage('categories')">選擇其他類別</button>
+            <button class="btn" onclick="showPage('categories')">新增其他類別</button>
             <button class="btn" onclick="saveUserInfoAndShowHabits()">保存信息並查看習慣表格</button>
         </div>
     </section>
@@ -784,56 +799,20 @@
         <table class="habits-table">
             <thead>
                 <tr>
-                    <th style="width: 15%">類別</th>
-                    <th style="width: 30%">習慣名稱</th>
-                    <th style="width: 35%">詳細描述</th>
-                    <th style="width: 20%">標籤</th>
+                    <th>類別</th>
+                    <th>項目</th>
+                    <th>習慣名稱</th>
+                    <th>詳細描述</th>
+                    <th>標籤</th>
                 </tr>
             </thead>
-            <tbody id="habits-list">
-                <!-- 將根據用戶選擇動態填充 -->
+            <tbody id="habits-table-body">
+                <!-- 習慣列表將在這裡動態生成 -->
             </tbody>
         </table>
         
-        <div class="add-habit-form">
-            <h3>添加新習慣</h3>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="habit-category">習慣類別</label>
-                    <select id="habit-category">
-                        <option value="lifestyle">生活習慣</option>
-                        <option value="sleep">睡眠習慣</option>
-                        <option value="couple">情侶互動習慣</option>
-                        <option value="social">人際相處習慣</option>
-                        <option value="food">飲食習慣</option>
-                        <option value="leisure">休閒習慣</option>
-                        <option value="fitness">運動習慣</option>
-                        <option value="finance">理財與消費習慣</option>
-                        <option value="values">價值觀跟信念</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="habit-name">習慣名稱</label>
-                    <input type="text" id="habit-name" placeholder="例如：晚安問候">
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="habit-description">詳細描述</label>
-                <textarea id="habit-description" placeholder="描述這個習慣的具體內容和執行方式"></textarea>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="habit-tags">標籤 (用逗號分隔)</label>
-                    <input type="text" id="habit-tags" placeholder="例如：平日,假日,晚上">
-                </div>
-            </div>
-            <div class="form-group">
-                <button class="btn" onclick="addHabit()" style="width: 100%">添加習慣</button>
-            </div>
-        </div>
-        
         <div style="text-align: center; margin-top: 30px;">
-            <button class="btn" onclick="showPage('categories')">選擇其他類別</button>
+            <button class="btn" onclick="showPage('categories')">新增其他類別</button>
             <button class="btn" onclick="showPage('welcome')">返回首頁</button>
         </div>
     </section>
@@ -844,6 +823,19 @@
 </footer>
 
 <script>
+    // 定義圖標對應
+    const icons = {
+        lifestyle: "fa-home",
+        sleep: "fa-moon",
+        couple: "fa-heart",
+        social: "fa-users",
+        food: "fa-utensils",
+        leisure: "fa-gamepad",
+        fitness: "fa-running",
+        finance: "fa-wallet",
+        values: "fa-star"
+    };
+    
     // 當前用戶信息
     let currentUser = {
         id: generateUserId(),
@@ -1043,6 +1035,13 @@
         // 記錄提交時間
         currentUser.submitTime = new Date().toLocaleString();
         
+        // 獲取當前問卷類別
+        const activeQuestionSet = document.querySelector('.question-set[style="display: block"]') || 
+                                  document.querySelector('.question-set:not([style*="display: none"])');
+        if (activeQuestionSet) {
+            currentUser.primaryCategory = activeQuestionSet.id.replace('-questions', '');
+        }
+        
         // 獲取當前類別的答案
         updateResultsDisplay();
         
@@ -1086,12 +1085,36 @@
         // 清空之前的習慣
         currentUser.habits = [];
         
-        // 獲取問卷類型
-        const activeQuestionSet = document.querySelector('.question-set[style="display: block"]') || 
-                                  document.querySelector('.question-set:not([style*="display: none"])');
-        if (!activeQuestionSet) return;
-        
-        currentUser.primaryCategory = activeQuestionSet.id.replace('-questions', '');
+        // 使用已保存的主要類別，如果沒有則使用默認值
+        if (!currentUser.primaryCategory) {
+            // 嘗試從第一個答案中獲取類別
+            const firstAnswer = currentUser.answers[0];
+            if (firstAnswer && firstAnswer.questionText) {
+                // 根據問題文本判斷類別
+                const text = firstAnswer.questionText.toLowerCase();
+                if (text.includes('睡眠')) {
+                    currentUser.primaryCategory = 'sleep';
+                } else if (text.includes('情侶') || text.includes('互動')) {
+                    currentUser.primaryCategory = 'couple';
+                } else if (text.includes('人際') || text.includes('社交')) {
+                    currentUser.primaryCategory = 'social';
+                } else if (text.includes('飲食')) {
+                    currentUser.primaryCategory = 'food';
+                } else if (text.includes('休閒')) {
+                    currentUser.primaryCategory = 'leisure';
+                } else if (text.includes('運動')) {
+                    currentUser.primaryCategory = 'fitness';
+                } else if (text.includes('理財') || text.includes('消費')) {
+                    currentUser.primaryCategory = 'finance';
+                } else if (text.includes('價值觀') || text.includes('信念')) {
+                    currentUser.primaryCategory = 'values';
+                } else {
+                    currentUser.primaryCategory = 'lifestyle';
+                }
+            } else {
+                currentUser.primaryCategory = 'lifestyle'; // 默認類別
+            }
+        }
         
         // 遍歷每個問題的答案
         currentUser.answers.forEach(answer => {
@@ -1128,59 +1151,112 @@
     
     // 更新習慣表格
     function updateHabitsTable() {
-        const habitsList = document.getElementById('habits-list');
-        habitsList.innerHTML = '';
+        const tableBody = document.getElementById('habits-table-body');
+        tableBody.innerHTML = '';
         
-        // 圖標映射
-        const icons = {
-            lifestyle: "fa-home",
-            sleep: "fa-moon",
-            couple: "fa-heart",
-            social: "fa-users",
-            food: "fa-utensils",
-            leisure: "fa-gamepad",
-            fitness: "fa-running",
-            finance: "fa-wallet",
-            values: "fa-star"
-        };
-        
-        // 類別名稱映射
-        const categoryNames = {
-            lifestyle: "生活習慣",
-            sleep: "睡眠習慣",
-            couple: "情侶互動習慣",
-            social: "人際相處習慣",
-            food: "飲食習慣",
-            leisure: "休閒習慣",
-            fitness: "運動習慣",
-            finance: "理財與消費習慣",
-            values: "價值觀跟信念"
-        };
-        
-        // 顯示當前用戶的所有習慣
         currentUser.habits.forEach((habit, index) => {
             const row = document.createElement('tr');
-            row.setAttribute('data-habit-index', index);
             
-            // 格式化標籤顯示
-            const tagsDisplay = habit.tags && habit.tags.length > 0 
-                ? habit.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') 
-                : '無';
+            // 類別圖標和名稱
+            const categoryCell = document.createElement('td');
+            const iconContainer = document.createElement('div');
+            iconContainer.className = `habit-icon ${habit.category}`;
             
-            row.innerHTML = `
-                <td>
-                    <div class="habit-icon ${habit.category}">
-                        <i class="fas ${icons[habit.category] || 'fa-star'}"></i>
-                    </div>
-                    ${categoryNames[habit.category] || '未分類'}
-                </td>
-                <td>${habit.name}</td>
-                <td>
-                    <textarea class="habit-description-edit" placeholder="點擊此處編輯詳細描述" onchange="updateHabitDescription(${index}, this.value)" rows="3">${habit.description || ''}</textarea>
-                </td>
-                <td>${tagsDisplay}</td>
-            `;
-            habitsList.appendChild(row);
+            const categoryIcon = document.createElement('i');
+            categoryIcon.className = `fas ${icons[habit.category]}`;
+            iconContainer.appendChild(categoryIcon);
+            
+            categoryCell.appendChild(iconContainer);
+            
+            const categoryName = document.createElement('div');
+            categoryName.textContent = getCategoryName(habit.category);
+            categoryCell.appendChild(categoryName);
+            row.appendChild(categoryCell);
+            
+            // 項目編號 - 修復項目編號提取邏輯
+            const itemCell = document.createElement('td');
+            let itemNumber = '';
+            
+            // 嘗試從名稱中提取項目編號和類別（例如：1. 親密行為）
+            const questionMatch = habit.name.match(/^(\d+)\.\s*([^.。,，]+)/);
+            if (questionMatch && questionMatch.length > 2) {
+                // 格式化為 "數字. 類別名稱"
+                itemNumber = `${questionMatch[1]}. ${questionMatch[2].trim()}`;
+                itemCell.textContent = itemNumber;
+            } else {
+                // 如果沒有從名稱中匹配到，嘗試從對應的問題中提取
+                const answer = currentUser.answers.find(a => 
+                    a.options.some(o => o.text === habit.name || o.customText === habit.name)
+                );
+                
+                if (answer) {
+                    // 從問題文本中提取問題編號和類別
+                    const questionFullMatch = answer.questionText.match(/^(\d+)\.\s*([^.。,，]+)/);
+                    if (questionFullMatch && questionFullMatch.length > 2) {
+                        itemNumber = `${questionFullMatch[1]}. ${questionFullMatch[2].trim()}`;
+                        itemCell.textContent = itemNumber;
+                    }
+                }
+            }
+            
+            // 如果仍然無法提取，嘗試使用其他方法識別項目
+            if (!itemNumber && habit.category === 'couple') {
+                itemCell.textContent = "1. 親密行為";
+            } else if (!itemNumber && habit.name.includes('親密')) {
+                itemCell.textContent = "1. 親密行為";
+            }
+            
+            row.appendChild(itemCell);
+            
+            // 習慣名稱（移除項目編號）
+            const nameCell = document.createElement('td');
+            let displayName = habit.name;
+            // 如果習慣名稱含有編號格式（1. XXX），則只顯示後面的部分
+            if (habit.name.match(/^\d+\.\s*/)) {
+                displayName = habit.name.replace(/^\d+\.\s*/, '').trim();
+            }
+            displayName = displayName.replace(/<[^>]+>/g, '').trim();
+            nameCell.textContent = displayName;
+            row.appendChild(nameCell);
+            
+            // 詳細描述
+            const descriptionCell = document.createElement('td');
+            const descriptionTextarea = document.createElement('textarea');
+            descriptionTextarea.className = 'habit-description-edit';
+            descriptionTextarea.value = habit.description || '';
+            descriptionTextarea.placeholder = '點擊此處編輯描述';
+            descriptionTextarea.addEventListener('change', (e) => {
+                updateHabitDescription(index, e.target.value);
+            });
+            descriptionCell.appendChild(descriptionTextarea);
+            row.appendChild(descriptionCell);
+            
+            // 標籤
+            const tagsCell = document.createElement('td');
+            if (habit.tags && habit.tags.length > 0) {
+                habit.tags.forEach(tag => {
+                    const tagSpan = document.createElement('span');
+                    tagSpan.className = 'tag';
+                    tagSpan.textContent = tag;
+                    tagsCell.appendChild(tagSpan);
+                });
+            } else {
+                // 嘗試從名稱中提取標籤
+                const tags = extractTags(habit.name);
+                if (tags.length > 0) {
+                    tags.forEach(tag => {
+                        const tagSpan = document.createElement('span');
+                        tagSpan.className = 'tag';
+                        tagSpan.textContent = tag;
+                        tagsCell.appendChild(tagSpan);
+                    });
+                } else {
+                    tagsCell.textContent = '無';
+                }
+            }
+            row.appendChild(tagsCell);
+            
+            tableBody.appendChild(row);
         });
     }
     
@@ -1753,14 +1829,23 @@
 
     // 為每個問卷類別添加「其他」選項
     function addOtherOption(category, questionSet) {
+        // 如果是價值觀跟信念類別，不添加「自由填寫」選項
+        if (category === 'values') {
+            return;
+        }
+        
         // 問題標題
         const questionCount = questionSet.querySelectorAll('.question').length + 1;
         const otherQuestionDiv = document.createElement('div');
         otherQuestionDiv.className = 'question';
-            
-        // 問題標題
+        
+        // 問題標題 - 飲食習慣類別特殊處理
         const otherQuestionHeader = document.createElement('h3');
-        otherQuestionHeader.textContent = `${questionCount}. 其他${getCategoryName(category)}`;
+        if (category === 'food') {
+            otherQuestionHeader.textContent = `${questionCount}. 其他相關習慣`;
+        } else {
+            otherQuestionHeader.textContent = `${questionCount}. 其他${getCategoryName(category)}`;
+        }
         otherQuestionDiv.appendChild(otherQuestionHeader);
         
         // 添加說明文字
