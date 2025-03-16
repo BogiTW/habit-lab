@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>好習慣配對實驗室</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', '微軟正黑體', sans-serif;
+        }
+        
+        body {
+            background-color: #fff5f7;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #e83e8c;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: #e83e8c;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+        }
+        
+        p {
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #e83e8c;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            background-color: #d6336c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(232, 62, 140, 0.2);
+        }
+        
+        .page {
+            display: none;
+            min-height: 80vh;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        /* 歡迎頁面樣式 */
+        .welcome-image {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+            border-radius: 50%;
+            background-color: #ffe3eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            color: #e83e8c;
+            box-shadow: 0 10px 30px rgba(232, 62, 140, 0.2);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        /* 習慣類別選擇頁面樣式 */
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .category {
+            width: 180px;
+            text-align: center;
+        }
+        
+        .category-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-size: 2.5rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-circle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .category-title {
+            font-size: 1.2rem;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        
+        /* 問卷頁面樣式 */
+        .question {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .option {
+            flex: 1;
+            min-width: 200px;
+            cursor: pointer;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .option:hover {
+            border-color: #e83e8c;
+            background-color: #fff0f6;
+        }
+        
+        .option.selected {
+            border-color: #e83e8c;
+            background-color: #ffe3eb;
+        }
+        
+        /* 新增標籤相關樣式 */
+        .tags-container {
+            margin-top: 10px;
+            display: none;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .option.selected .tags-container {
+            display: flex;
+        }
+        
+        .tag-label {
+            display: block;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #f1f1f1;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+        
+        .tag:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .tag.selected {
+            background-color: #e83e8c;
+            color: white;
+        }
+        
+        .options-instruction {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        /* 新增標籤相關樣式 */
+        .add-tag-btn {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #e83e8c;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: white;
+            cursor: pointer;
+            margin-left: 5px;
+            transition: all 0.2s ease;
+        }
+        
+        .add-tag-btn:hover {
+            background-color: #d6336c;
+            transform: translateY(-1px);
+        }
+        
+        .new-tag-input-container {
+            display: none;
+            margin-top: 5px;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .new-tag-input {
+            padding: 5px 12px;
+            border-radius: 15px;
+            border: 1px solid #ffe3eb;
+            font-size: 0.9rem;
+            width: 100%;
+            outline: none;
+        }
+        
+        .new-tag-input:focus {
+            border-color: #e83e8c;
+            box-shadow: 0 0 3px rgba(232, 62, 140, 0.3);
+        }
+        
+        .new-tag-buttons {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        
+        .new-tag-confirm, .new-tag-cancel {
+            padding: 5px 12px;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            flex: 1;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            height: 36px;
+        }
+        
+        .new-tag-confirm {
+            background-color: #e83e8c;
+        }
+        
+        .new-tag-confirm:hover {
+            background-color: #d6336c;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(232, 62, 140, 0.2);
+        }
+        
+        .new-tag-cancel {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .new-tag-cancel:hover {
+            background-color: #e9ecef;
+            color: #495057;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+        }
+        
+        /* 結果頁面樣式 */
+        .result-category {
+            margin: 30px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .result-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            margin-right: 20px;
+        }
+        
+        .result-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .result-description {
+            margin-bottom: 15px;
+        }
+        
+        .recommendation {
+            background: #fff0f6;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        /* 對應習慣類別的顏色 */
+        .lifestyle { background-color: #20c997; }
+        .sleep { background-color: #6f42c1; }
+        .couple { background-color: #e83e8c; }
+        .social { background-color: #fd7e14; }
+        .food { background-color: #28a745; }
+        .leisure { background-color: #17a2b8; }
+        .fitness { background-color: #dc3545; }
+        .finance { background-color: #ffc107; }
+        .values { background-color: #457b9d; }
+        
+        /* 習慣表格頁面樣式 */
+        .habits-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .habits-table th, .habits-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        
+        /* 類別列居中顯示 */
+        .habits-table td:first-child {
+            text-align: center;
+        }
+        
+        .habits-table th {
+            background: #fff0f6;
+            color: #e83e8c;
+        }
+        
+        .habit-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            margin: 0 auto 5px; /* 修改為上下邊距，左右居中 */
+        }
+        
+        .add-habit-form {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .categories {
+                gap: 15px;
+            }
+            
+            .category {
+                width: 130px;
+            }
+            
+            .category-circle {
+                width: 120px;
+                height: 120px;
+                font-size: 2rem;
+            }
+            
+            .category-title {
+                font-size: 1rem;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+        }
+        
+        /* 頁腳樣式 */
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 0.8rem;
+        }
+        
+        footer a {
+            color: #999;
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            color: #e83e8c;
+            text-decoration: underline;
+        }
+        
+        /* 用戶信息表單樣式 */
+        .user-info-form {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .user-info-form h3 {
+            color: #e83e8c;
+            margin-bottom: 20px;
+        }
+        
+        /* 自定義文字輸入框樣式 */
+        .custom-text-container {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            width: 100%;
+        }
+        
+        .custom-text-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            resize: vertical;
+        }
+        
+        .custom-text-input:focus {
+            border-color: #e83e8c;
+            outline: none;
+            box-shadow: 0 0 3px rgba(232, 62, 140, 0.3);
+        }
+        
+        /* 習慣詳細描述編輯區域樣式 */
+        .habit-description-edit {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #f0f0f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            resize: vertical;
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+        
+        .habit-description-edit:focus {
+            border-color: #e83e8c;
+            outline: none;
+            box-shadow: 0 0 5px rgba(232, 62, 140, 0.2);
+        }
+        
+        .habit-description-edit::placeholder {
+            color: #aaa;
+            font-style: italic;
+        }
+        
+        /* 習慣表格中標籤樣式 */
+        .habits-table .tag {
+            display: inline-block;
+            padding: 3px 8px;
+            margin: 2px;
+            background-color: #ffe3eb;
+            color: #e83e8c;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* 確保表格中的單元格內容垂直居中 */
+        .habits-table td {
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 歡迎頁面 -->
+    <section id="welcome" class="page active">
+        <header>
+            <h1>好習慣配對實驗室</h1>
+            <p>發現並培養適合您的好習慣，提升生活品質！</p>
+        </header>
+        
+        <div class="welcome-image">
+            <i class="fas fa-seedling"></i>
+        </div>
+        
+        <div style="text-align: center;">
+            <p>歡迎來到好習慣配對實驗室！</p>
+            <p>通過這個問卷，我們將幫助您發現最適合您的好習慣，<br>並提供個性化的建議來幫助您培養這些習慣。</p>
+            <p>只需花費約5分鐘時間完成問卷，開始您的好習慣養成之旅！</p>
+            
+            <button class="btn" onclick="showPage('categories')">開始問卷</button>
+        </div>
+    </section>
+    
+    <!-- 習慣類別選擇頁面 -->
+    <section id="categories" class="page">
+        <header>
+            <h1>選擇習慣類別</h1>
+            <p>請選擇您最感興趣的習慣類別</p>
+        </header>
+        
+        <div class="categories">
+            <div class="category">
+                <div class="category-circle lifestyle" onclick="showQuestionnaire('lifestyle')">
+                    <i class="fas fa-home"></i>
+                </div>
+                <div class="category-title">生活習慣<br>(平日的習慣)</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle sleep" onclick="showQuestionnaire('sleep')">
+                    <i class="fas fa-moon"></i>
+                </div>
+                <div class="category-title">睡眠習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle couple" onclick="showQuestionnaire('couple')">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="category-title">情侶互動習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle social" onclick="showQuestionnaire('social')">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="category-title">人際相處習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle food" onclick="showQuestionnaire('food')">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <div class="category-title">飲食習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle leisure" onclick="showQuestionnaire('leisure')">
+                    <i class="fas fa-gamepad"></i>
+                </div>
+                <div class="category-title">休閒習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle fitness" onclick="showQuestionnaire('fitness')">
+                    <i class="fas fa-running"></i>
+                </div>
+                <div class="category-title">運動習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle finance" onclick="showQuestionnaire('finance')">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="category-title">理財與消費習慣</div>
+            </div>
+            
+            <div class="category">
+                <div class="category-circle values" onclick="showQuestionnaire('values')">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="category-title">價值觀跟信念</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button class="btn" onclick="showPage('welcome')">返回</button>
+        </div>
+    </section>
+    
+    <!-- 問卷頁面 -->
+    <section id="questionnaire" class="page">
+        <header>
+            <h1 id="questionnaire-title">生活習慣問卷</h1>
+            <p>請根據您的實際情況回答以下問題 (可複選)</p>
+        </header>
+        
+        <!-- 生活習慣問卷 -->
+        <div id="lifestyle-questions" class="question-set">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 睡眠習慣問卷 -->
+        <div id="sleep-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+
+            <!-- 手動添加「其他」選項 -->
+            <div class="question">
+                <h3>2. 其他睡眠習慣</h3>
+                <div class="options-instruction">* 您可以選擇多個選項</div>
+                <div class="options">
+                    <div class="option" onclick="selectOption(this, event)">
+                        <p>請直接填寫其他睡眠習慣</p>
+                        <div class="tags-container">
+                            <span class="tag-label">添加標籤：</span>
+                            <span class="add-tag-btn" onclick="showAddTagInput(this, event)"><i class="fas fa-plus"></i> 新增標籤</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 情侶互動問卷 -->
+        <div id="couple-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 人際相處問卷 -->
+        <div id="social-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 飲食習慣問卷 -->
+        <div id="food-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 休閒習慣問卷 -->
+        <div id="leisure-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 運動習慣問卷 -->
+        <div id="fitness-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 理財消費問卷 -->
+        <div id="finance-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <!-- 價值觀問卷 -->
+        <div id="values-questions" class="question-set" style="display: none;">
+            <!-- 這裡的內容會由 JavaScript 動態生成 -->
+        </div>
+        
+        <div class="navigation">
+            <button class="btn" onclick="showPage('categories')">返回</button>
+            <button class="btn" onclick="showResults()">提交</button>
+        </div>
+    </section>
+    
+    <!-- 結果頁面 -->
+    <section id="results" class="page">
+        <header>
+            <h1>您的習慣配對結果</h1>
+            <p>根據您的回答，我們為您推薦以下習慣</p>
+        </header>
+        
+        <div id="results-container">
+            <!-- 這裡將根據用戶選擇動態填充 -->
+        </div>
+        
+        <!-- 添加用戶信息表單 -->
+        <div class="user-info-form">
+            <h3>保存您的信息以便日後查看</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="user-name">您的姓名</label>
+                    <input type="text" id="user-name" placeholder="請輸入您的姓名">
+                </div>
+                <div class="form-group">
+                    <label for="user-phone">聯繫電話</label>
+                    <input type="tel" id="user-phone" placeholder="請輸入您的聯繫電話">
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn" onclick="showPage('categories')">選擇其他類別</button>
+            <button class="btn" onclick="saveUserInfoAndShowHabits()">保存信息並查看習慣表格</button>
+        </div>
+    </section>
+    
+    <!-- 習慣表格頁面 -->
+    <section id="habits-table" class="page">
+        <header>
+            <h1>我的習慣清單</h1>
+            <p>這裡列出了您已選擇的習慣，您可以添加、編輯或刪除</p>
+        </header>
+        
+        <table class="habits-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%">類別</th>
+                    <th style="width: 30%">習慣名稱</th>
+                    <th style="width: 35%">詳細描述</th>
+                    <th style="width: 20%">標籤</th>
+                </tr>
+            </thead>
+            <tbody id="habits-list">
+                <!-- 將根據用戶選擇動態填充 -->
+            </tbody>
+        </table>
+        
+        <div class="add-habit-form">
+            <h3>添加新習慣</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="habit-category">習慣類別</label>
+                    <select id="habit-category">
+                        <option value="lifestyle">生活習慣</option>
+                        <option value="sleep">睡眠習慣</option>
+                        <option value="couple">情侶互動習慣</option>
+                        <option value="social">人際相處習慣</option>
+                        <option value="food">飲食習慣</option>
+                        <option value="leisure">休閒習慣</option>
+                        <option value="fitness">運動習慣</option>
+                        <option value="finance">理財與消費習慣</option>
+                        <option value="values">價值觀跟信念</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="habit-name">習慣名稱</label>
+                    <input type="text" id="habit-name" placeholder="例如：晚安問候">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="habit-description">詳細描述</label>
+                <textarea id="habit-description" placeholder="描述這個習慣的具體內容和執行方式"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="habit-tags">標籤 (用逗號分隔)</label>
+                    <input type="text" id="habit-tags" placeholder="例如：平日,假日,晚上">
+                </div>
+            </div>
+            <div class="form-group">
+                <button class="btn" onclick="addHabit()" style="width: 100%">添加習慣</button>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="btn" onclick="showPage('categories')">選擇其他類別</button>
+            <button class="btn" onclick="showPage('welcome')">返回首頁</button>
+        </div>
+    </section>
+</div>
+
+<footer>
+    <p>© 2023 好習慣配對實驗室 | <a href="admin.html">管理員入口</a></p>
+</footer>
+
+<script>
+    // 當前用戶信息
+    let currentUser = {
+        id: generateUserId(),
+        name: '',
+        phone: '',
+        submitTime: '',
+        primaryCategory: '',
+        habits: [],
+        answers: [] // 添加答案數組
+    };
+    
+    // 選擇選項
+    function selectOption(element, event) {
+        // 阻止冒泡，避免點擊標籤時觸發選項的點擊事件
+        event.stopPropagation();
+        
+        // 如果點擊的是標籤容器或標籤，不處理
+        if (event.target.classList.contains('tags-container') || 
+            event.target.classList.contains('tag') ||
+            event.target.classList.contains('tag-label') ||
+            event.target.classList.contains('add-tag-btn') ||
+            event.target.classList.contains('new-tag-input') ||
+            event.target.classList.contains('new-tag-confirm') ||
+            event.target.classList.contains('new-tag-cancel') ||
+            event.target.classList.contains('custom-text-input') ||
+            event.target.classList.contains('custom-text-container')) {
+            return;
+        }
+        
+        // 切換當前選項的選中狀態
+        element.classList.toggle('selected');
+        
+        // 如果這是「其他」選項且被選中，顯示自定義文字輸入框
+        if ((element.querySelector('p').textContent.includes('請直接填寫其他') || 
+             element.querySelector('p').textContent.includes('其他 (文字說明)')) && 
+            element.classList.contains('selected')) {
+            // 確保自定義文字輸入框存在
+            let customTextContainer = element.querySelector('.custom-text-container');
+            if (!customTextContainer) {
+                customTextContainer = document.createElement('div');
+                customTextContainer.className = 'custom-text-container';
+                customTextContainer.innerHTML = `
+                    <textarea class="custom-text-input" placeholder="請輸入您的自定義習慣內容" rows="3" onclick="event.stopPropagation()"></textarea>
+                `;
+                // 在標籤容器前插入自定義文字輸入框
+                const tagsContainer = element.querySelector('.tags-container');
+                element.insertBefore(customTextContainer, tagsContainer);
+                
+                // 為輸入框添加事件監聽器，保存用戶輸入
+                const customTextInput = customTextContainer.querySelector('.custom-text-input');
+                customTextInput.addEventListener('input', function() {
+                    saveAnswers();
+                });
+                
+                // 自動聚焦輸入框
+                customTextInput.focus();
+            } else {
+                customTextContainer.style.display = 'block';
+            }
+        } else if ((element.querySelector('p').textContent.includes('請直接填寫其他') || 
+                    element.querySelector('p').textContent.includes('其他 (文字說明)')) && 
+                   !element.classList.contains('selected')) {
+            // 如果取消選中，隱藏自定義文字輸入框
+            const customTextContainer = element.querySelector('.custom-text-container');
+            if (customTextContainer) {
+                customTextContainer.style.display = 'none';
+            }
+        }
+        
+        // 記錄選擇的答案
+        saveAnswers();
+    }
+    
+    // 切換標籤選中狀態
+    function toggleTag(tag, event) {
+        // 阻止冒泡，避免觸發父元素的點擊事件
+        event.stopPropagation();
+        
+        // 切換標籤的選中狀態
+        tag.classList.toggle('selected');
+        
+        // 記錄選擇的答案
+        saveAnswers();
+    }
+    
+    // 保存用戶的回答
+    function saveAnswers() {
+        const answers = [];
+        
+        // 獲取當前顯示的問卷
+        const activeQuestionSet = document.querySelector('.question-set[style="display: block"]') || 
+                                  document.querySelector('.question-set:not([style*="display: none"])');
+        
+        if (!activeQuestionSet) return;
+        
+        // 遍歷每個問題
+        const questions = activeQuestionSet.querySelectorAll('.question');
+        questions.forEach((question, questionIndex) => {
+            // 獲取問題文本
+            const questionText = question.querySelector('h3').textContent;
+            
+            // 獲取選中的選項
+            const selectedOptions = question.querySelectorAll('.option.selected');
+            const options = [];
+            
+            // 遍歷每個選中的選項
+            selectedOptions.forEach(option => {
+                // 獲取選項文本
+                const optionText = option.querySelector('p').textContent;
+                
+                // 獲取自定義文字內容（如果有）
+                let customText = '';
+                const customTextInput = option.querySelector('.custom-text-input');
+                if (customTextInput) {
+                    customText = customTextInput.value.trim();
+                }
+                
+                // 獲取選中的標籤
+                const selectedTags = option.querySelectorAll('.tag.selected');
+                const tags = Array.from(selectedTags).map(tag => tag.textContent);
+                
+                // 添加到選項數組
+                options.push({
+                    text: optionText,
+                    customText: customText,
+                    tags: tags
+                });
+            });
+            
+            // 添加到回答數組
+            answers.push({
+                questionIndex: questionIndex,
+                questionText: questionText,
+                options: options
+            });
+        });
+        
+        // 更新用戶回答
+        currentUser.answers = answers;
+    }
+    
+    // 生成隨機用戶ID
+    function generateUserId() {
+        return Math.floor(10000 + Math.random() * 90000);
+    }
+    
+    function showPage(pageId) {
+        // 隱藏所有頁面
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+        
+        // 顯示指定頁面
+        document.getElementById(pageId).classList.add('active');
+        
+        // 滾動到頁面頂部
+        window.scrollTo(0, 0);
+    }
+    
+    // 顯示問卷
+    function showQuestionnaire(category) {
+        // 當前用戶選擇的類別
+        currentCategory = category;
+        
+        // 設置問卷標題
+        const titles = {
+            lifestyle: "生活習慣問卷",
+            sleep: "睡眠習慣問卷",
+            couple: "情侶互動問卷",
+            social: "人際相處問卷",
+            food: "飲食習慣問卷", 
+            leisure: "休閒習慣問卷",
+            fitness: "運動習慣問卷",
+            finance: "理財消費問卷",
+            values: "價值觀問卷"
+        };
+        
+        // 更新問卷標題
+        document.getElementById("questionnaire-title").textContent = titles[category];
+        
+        // 隱藏所有問卷
+        document.querySelectorAll('.question-set').forEach(set => {
+            set.style.display = 'none';
+        });
+        
+        // 顯示選擇的問卷
+        document.getElementById(`${category}-questions`).style.display = 'block';
+        
+        // 清空已選擇的選項
+        selectedOptions = [];
+        
+        // 顯示問卷頁面
+        showPage('questionnaire');
+    }
+    
+    function showResults() {
+        // 記錄提交時間
+        currentUser.submitTime = new Date().toLocaleString();
+        
+        // 獲取當前類別的答案
+        updateResultsDisplay();
+        
+        showPage('results');
+    }
+    
+    function saveUserInfoAndShowHabits() {
+        // 獲取並保存用戶信息
+        const name = document.getElementById('user-name').value;
+        const phone = document.getElementById('user-phone').value;
+        
+        if (!name || !phone) {
+            alert('請填寫您的姓名和聯繫電話！');
+            return;
+        }
+        
+        // 更新當前用戶信息
+        currentUser.name = name;
+        currentUser.phone = phone;
+        
+        // 將回答轉換為習慣
+        convertAnswersToHabits();
+        
+        // 保存用戶信息到本地存儲
+        const users = JSON.parse(localStorage.getItem('habitLabUsers') || '[]');
+        users.push(currentUser);
+        localStorage.setItem('habitLabUsers', JSON.stringify(users));
+        
+        // 顯示習慣表格頁面
+        updateHabitsTable();
+        showPage('habits-table');
+    }
+    
+    // 將用戶的回答轉換為習慣
+    function convertAnswersToHabits() {
+        // 確保用戶有回答
+        if (!currentUser.answers || currentUser.answers.length === 0) {
+            return;
+        }
+        
+        // 清空之前的習慣
+        currentUser.habits = [];
+        
+        // 獲取問卷類型
+        const activeQuestionSet = document.querySelector('.question-set[style="display: block"]') || 
+                                  document.querySelector('.question-set:not([style*="display: none"])');
+        if (!activeQuestionSet) return;
+        
+        currentUser.primaryCategory = activeQuestionSet.id.replace('-questions', '');
+        
+        // 遍歷每個問題的答案
+        currentUser.answers.forEach(answer => {
+            // 遍歷每個選中的選項
+            answer.options.forEach(option => {
+                // 構建習慣名稱 - 使用自定義文字或選項文字
+                let habitName = option.customText || option.text;
+                
+                // 創建習慣對象
+                const habitObj = {
+                    category: currentUser.primaryCategory,
+                    name: habitName,
+                    description: "", // 將詳細描述設為空白，供用戶自行輸入
+                    tags: option.tags || []
+                };
+                
+                // 添加到習慣列表
+                currentUser.habits.push(habitObj);
+            });
+        });
+        
+        // 更新本地存儲
+        updateUserInStorage();
+    }
+    
+    // 新增一個函數來更新習慣的詳細描述
+    function updateHabitDescription(habitIndex, newDescription) {
+        if (currentUser.habits[habitIndex]) {
+            currentUser.habits[habitIndex].description = newDescription;
+            // 更新本地儲存
+            updateUserInStorage();
+        }
+    }
+    
+    // 更新習慣表格
+    function updateHabitsTable() {
+        const habitsList = document.getElementById('habits-list');
+        habitsList.innerHTML = '';
+        
+        // 圖標映射
+        const icons = {
+            lifestyle: "fa-home",
+            sleep: "fa-moon",
+            couple: "fa-heart",
+            social: "fa-users",
+            food: "fa-utensils",
+            leisure: "fa-gamepad",
+            fitness: "fa-running",
+            finance: "fa-wallet",
+            values: "fa-star"
+        };
+        
+        // 類別名稱映射
+        const categoryNames = {
+            lifestyle: "生活習慣",
+            sleep: "睡眠習慣",
+            couple: "情侶互動習慣",
+            social: "人際相處習慣",
+            food: "飲食習慣",
+            leisure: "休閒習慣",
+            fitness: "運動習慣",
+            finance: "理財與消費習慣",
+            values: "價值觀跟信念"
+        };
+        
+        // 顯示當前用戶的所有習慣
+        currentUser.habits.forEach((habit, index) => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-habit-index', index);
+            
+            // 格式化標籤顯示
+            const tagsDisplay = habit.tags && habit.tags.length > 0 
+                ? habit.tags.map(tag => `<span class="tag">${tag}</span>`).join(' ') 
+                : '無';
+            
+            row.innerHTML = `
+                <td>
+                    <div class="habit-icon ${habit.category}">
+                        <i class="fas ${icons[habit.category] || 'fa-star'}"></i>
+                    </div>
+                    ${categoryNames[habit.category] || '未分類'}
+                </td>
+                <td>${habit.name}</td>
+                <td>
+                    <textarea class="habit-description-edit" placeholder="點擊此處編輯詳細描述" onchange="updateHabitDescription(${index}, this.value)" rows="3">${habit.description || ''}</textarea>
+                </td>
+                <td>${tagsDisplay}</td>
+            `;
+            habitsList.appendChild(row);
+        });
+    }
+    
+    function addHabit() {
+        const category = document.getElementById('habit-category').value;
+        const name = document.getElementById('habit-name').value;
+        const description = document.getElementById('habit-description').value;
+        const tagsInput = document.getElementById('habit-tags').value;
+        
+        // 解析標籤
+        const tags = tagsInput ? tagsInput.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+        
+        if (!name || !description) {
+            alert('請填寫習慣名稱和描述！');
+            return;
+        }
+        
+        // 創建新習慣對象
+        const newHabit = {
+            category: category,
+            name: name,
+            description: description,
+            tags: tags
+        };
+        
+        // 添加到當前用戶的習慣列表
+        currentUser.habits.push(newHabit);
+        
+        // 更新本地儲存
+        updateUserInStorage();
+        
+        // 更新習慣表格
+        updateHabitsTable();
+        
+        // 清空表單
+        document.getElementById('habit-name').value = '';
+        document.getElementById('habit-description').value = '';
+        document.getElementById('habit-tags').value = '';
+    }
+    
+    // 更新本地存儲中的用戶信息
+    function updateUserInStorage() {
+        const users = JSON.parse(localStorage.getItem('habitLabUsers') || '[]');
+        const userIndex = users.findIndex(u => u.id === currentUser.id);
+        
+        if (userIndex !== -1) {
+            users[userIndex] = currentUser;
+            localStorage.setItem('habitLabUsers', JSON.stringify(users));
+        }
+    }
+    
+    // 更新結果顯示
+    function updateResultsDisplay() {
+        const resultsContainer = document.getElementById('results-container');
+        resultsContainer.innerHTML = '';
+        
+        // 依據用戶選擇的類別顯示推薦
+        const categoryIcons = {
+            lifestyle: "fa-home",
+            sleep: "fa-moon",
+            couple: "fa-heart",
+            social: "fa-users",
+            food: "fa-utensils",
+            leisure: "fa-gamepad",
+            fitness: "fa-running",
+            finance: "fa-wallet",
+            values: "fa-star"
+        };
+        
+        const categoryNames = {
+            lifestyle: "生活習慣",
+            sleep: "睡眠習慣",
+            couple: "情侶互動習慣",
+            social: "人際相處習慣",
+            food: "飲食習慣",
+            leisure: "休閒習慣",
+            fitness: "運動習慣",
+            finance: "理財與消費習慣",
+            values: "價值觀跟信念"
+        };
+        
+        // 創建結果顯示區域
+        const resultCategory = document.createElement('div');
+        resultCategory.className = 'result-category';
+        
+        // 根據選擇的類別顯示結果
+        const category = currentUser.primaryCategory || 'lifestyle';
+        
+        resultCategory.innerHTML = `
+            <div class="result-header">
+                <div class="result-icon ${category}">
+                    <i class="fas ${categoryIcons[category]}"></i>
+                </div>
+                <h2 class="result-title">${categoryNames[category]}推薦</h2>
+            </div>
+            <p class="result-description">根據您的回答，我們推薦您培養以下${categoryNames[category]}：</p>
+            <ul id="recommendations-list">
+                <!-- 這裡將根據用戶的答案動態填充 -->
+            </ul>
+            
+            <div class="recommendation">
+                <h4><i class="fas fa-lightbulb"></i> 建議養成習慣</h4>
+                <p id="habit-suggestion">持續21天形成習慣，您可以設置每日提醒來幫助自己堅持。</p>
+            </div>
+        `;
+        
+        resultsContainer.appendChild(resultCategory);
+        
+        // 根據用戶回答生成推薦列表
+        const recommendationsList = document.getElementById('recommendations-list');
+        
+        // 找出用戶選擇的選項並顯示
+        currentUser.answers.forEach(answer => {
+            answer.options.forEach(option => {
+                const li = document.createElement('li');
+                
+                // 如果有自定義文字，顯示自定義文字
+                if (option.customText) {
+                    li.textContent = option.customText;
+                } else {
+                    // 如果有選中的標籤，則顯示
+                    if (option.tags && option.tags.length > 0) {
+                        li.textContent = `${option.text} (標籤: ${option.tags.join(', ')})`;
+                    } else {
+                        li.textContent = option.text;
+                    }
+                }
+                
+                recommendationsList.appendChild(li);
+            });
+        });
+        
+        // 如果沒有任何推薦，顯示默認信息
+        if (recommendationsList.children.length === 0) {
+            const li = document.createElement('li');
+            li.textContent = '請回到問卷選擇您感興趣的習慣';
+            recommendationsList.appendChild(li);
+        }
+    }
+
+    // 頁面加載時
+    window.addEventListener('DOMContentLoaded', () => {
+        // 初始化頁面
+        showPage('welcome');
+        
+        // 加載問卷數據
+        loadQuestionnaireData();
+        
+        // 確保每個問卷區域都有「其他」選項
+        const categories = ['lifestyle', 'sleep', 'couple', 'social', 'food', 'leisure', 'fitness', 'finance', 'values'];
+        categories.forEach(category => {
+            const questionSet = document.getElementById(`${category}-questions`);
+            if (!questionSet) return;
+            
+            // 檢查是否已經有問題，如果沒有或者沒有其他選項，則添加「其他」選項
+            if (questionSet.querySelectorAll('.question').length === 0) {
+                // 為空的問卷區域添加「其他」選項
+                addOtherOption(category, questionSet);
+            } else {
+                // 檢查是否已有「其他」選項
+                let hasOtherOption = false;
+                const questions = questionSet.querySelectorAll('.question');
+                questions.forEach(question => {
+                    const title = question.querySelector('h3').textContent;
+                    if (title.includes('其他')) {
+                        hasOtherOption = true;
+                    }
+                });
+                
+                // 如果沒有「其他」選項，添加一個
+                if (!hasOtherOption) {
+                    addOtherOption(category, questionSet);
+                }
+            }
+        });
+    });
+    
+    // 加載問卷數據
+    function loadQuestionnaireData() {
+        // 從本地存儲獲取問卷數據
+        const questionnaires = JSON.parse(localStorage.getItem('habitLabQuestionnaires') || '{}');
+        
+        // 如果沒有數據，則不進行替換
+        if (Object.keys(questionnaires).length === 0) return;
+        
+        // 逐個類別更新問卷
+        Object.keys(questionnaires).forEach(category => {
+            const questionSet = document.getElementById(`${category}-questions`);
+            if (!questionSet) return;
+            
+            // 清空現有問題
+            questionSet.innerHTML = '';
+            
+            // 逐個添加問題
+            questionnaires[category].forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                // 問題標題
+                const questionHeader = document.createElement('h3');
+                questionHeader.textContent = `${index + 1}. ${question.text}`;
+                questionDiv.appendChild(questionHeader);
+                
+                // 添加說明文字
+                const instructionDiv = document.createElement('div');
+                instructionDiv.className = 'options-instruction';
+                instructionDiv.textContent = '* 您可以選擇多個選項';
+                questionDiv.appendChild(instructionDiv);
+                
+                // 選項容器
+                const optionsDiv = document.createElement('div');
+                optionsDiv.className = 'options';
+                
+                // 添加選項
+                question.options.forEach(option => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option';
+                    optionDiv.setAttribute('onclick', 'selectOption(this, event)');
+                    
+                    const optionText = document.createElement('p');
+                    optionText.textContent = option.text;
+                    optionDiv.appendChild(optionText);
+                    
+                    // 標籤容器
+                    const tagsContainer = document.createElement('div');
+                    tagsContainer.className = 'tags-container';
+                    
+                    // 添加標籤標題
+                    const tagLabel = document.createElement('span');
+                    tagLabel.className = 'tag-label';
+                    tagLabel.textContent = '添加標籤：';
+                    tagsContainer.appendChild(tagLabel);
+                    
+                    // 添加標籤選項
+                    if (option.tags && option.tags.length > 0) {
+                        option.tags.forEach(tag => {
+                            const tagSpan = document.createElement('span');
+                            tagSpan.className = 'tag';
+                            tagSpan.setAttribute('onclick', 'toggleTag(this, event)');
+                            tagSpan.textContent = tag;
+                            tagsContainer.appendChild(tagSpan);
+                        });
+                    }
+                    
+                    // 添加新增標籤按鈕
+                    const addTagBtn = document.createElement('span');
+                    addTagBtn.className = 'add-tag-btn';
+                    addTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
+                    addTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
+                    tagsContainer.appendChild(addTagBtn);
+                    
+                    optionDiv.appendChild(tagsContainer);
+                    optionsDiv.appendChild(optionDiv);
+                });
+                
+                // 添加「其他」選項作為每個問題選項列表的最後一個選項
+                const otherOptionDiv = document.createElement('div');
+                otherOptionDiv.className = 'option';
+                otherOptionDiv.setAttribute('onclick', 'selectOption(this, event)');
+                otherOptionDiv.style.backgroundColor = '#fff0f6'; // 淺粉色背景，使其突出顯示
+                
+                const otherOptionText = document.createElement('p');
+                otherOptionText.textContent = `其他 (文字說明)`;
+                otherOptionDiv.appendChild(otherOptionText);
+                
+                // 標籤容器
+                const otherTagsContainer = document.createElement('div');
+                otherTagsContainer.className = 'tags-container';
+                
+                // 添加標籤標題
+                const otherTagLabel = document.createElement('span');
+                otherTagLabel.className = 'tag-label';
+                otherTagLabel.textContent = '添加標籤：';
+                otherTagsContainer.appendChild(otherTagLabel);
+                
+                // 添加新增標籤按鈕
+                const otherAddTagBtn = document.createElement('span');
+                otherAddTagBtn.className = 'add-tag-btn';
+                otherAddTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
+                otherAddTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
+                otherTagsContainer.appendChild(otherAddTagBtn);
+                
+                otherOptionDiv.appendChild(otherTagsContainer);
+                optionsDiv.appendChild(otherOptionDiv);
+                
+                questionDiv.appendChild(optionsDiv);
+                questionSet.appendChild(questionDiv);
+            });
+            
+            // 為每個問卷類別添加「其他」選項問題
+            addOtherOption(category, questionSet);
+        });
+    }
+    
+    // 獲取問卷類別的中文名稱
+    function getCategoryName(category) {
+        const categoryNames = {
+            lifestyle: "生活習慣",
+            sleep: "睡眠習慣",
+            couple: "情侶互動習慣",
+            social: "人際相處習慣",
+            food: "飲食習慣",
+            leisure: "休閒習慣",
+            fitness: "運動習慣",
+            finance: "理財與消費習慣",
+            values: "價值觀跟信念"
+        };
+        
+        return categoryNames[category] || "習慣";
+    }
+
+    // 顯示習慣列表
+    function showHabitsList() {
+        // 獲取用戶選擇的答案
+        const answers = currentUser.answers;
+        
+        // 清空習慣列表
+        const habitsList = document.getElementById('habits-list');
+        habitsList.innerHTML = '';
+        
+        // 如果沒有答案，則顯示提示
+        if (!answers || answers.length === 0) {
+            habitsList.innerHTML = '<p class="no-habits">您還沒有選擇任何習慣，請回到問卷填寫。</p>';
+            return;
+        }
+        
+        // 逐個顯示習慣
+        answers.forEach(answer => {
+            answer.options.forEach(option => {
+                // 獲取標籤文本
+                const tagsHTML = option.tags.length > 0 ? 
+                    option.tags.map(tag => `<span class="habit-tag">${tag}</span>`).join('') : '';
+                
+                // 生成習慣項目
+                const habitItem = document.createElement('div');
+                habitItem.className = 'habit-item';
+                
+                // 為了在後台顯示格式為 "選項<標籤>"，我們需要將此格式保存到習慣的名稱中
+                const habitNameWithTags = option.tags.length > 0 ? 
+                    `${option.text}<${option.tags.join('><')}>` : option.text;
+                
+                habitItem.innerHTML = `
+                    <div class="habit-icon ${answer.category || 'lifestyle'}">
+                        <i class="fas ${getCategoryIcon(answer.category)}"></i>
+                    </div>
+                    <div class="habit-detail">
+                        <div class="habit-title">${option.text}</div>
+                        <div class="habit-desc">${answer.questionText}</div>
+                        <div class="habit-tags">${tagsHTML}</div>
+                    </div>
+                `;
+                
+                // 將習慣添加到列表
+                habitsList.appendChild(habitItem);
+                
+                // 添加到用戶習慣數組
+                currentUser.habits.push({
+                    category: answer.category || 'lifestyle',
+                    name: habitNameWithTags, // 使用帶標籤的名稱格式
+                    description: answer.questionText,
+                    tags: option.tags
+                });
+            });
+        });
+        
+        // 保存用戶信息到本地存儲
+        saveUserToStorage();
+    }
+
+    // 填充用戶詳情
+    function fillUserDetail(user) {
+        // 填充用戶基本信息
+        document.querySelector('.user-info-item:nth-child(1) .user-info-value').textContent = user.id;
+        document.querySelector('.user-info-item:nth-child(2) .user-info-value').textContent = user.name;
+        document.querySelector('.user-info-item:nth-child(3) .user-info-value').textContent = user.phone;
+        document.querySelector('.user-info-item:nth-child(4) .user-info-value').textContent = user.submitTime;
+        document.querySelector('.user-info-item:nth-child(5) .user-info-value').textContent = user.habits ? user.habits.length : 0;
+        
+        const categoryNames = {
+            lifestyle: '生活習慣',
+            sleep: '睡眠習慣',
+            couple: '情侶互動習慣',
+            social: '人際相處習慣',
+            food: '飲食習慣',
+            leisure: '休閒習慣',
+            fitness: '運動習慣',
+            finance: '理財與消費習慣',
+            values: '價值觀跟信念'
+        };
+        
+        document.querySelector('.user-info-item:nth-child(6) .user-info-value').textContent = categoryNames[user.primaryCategory] || '未指定';
+        
+        // 填充習慣列表
+        const habitsList = document.querySelector('.habits-list');
+        habitsList.innerHTML = '';
+        
+        const icons = {
+            lifestyle: "fa-home",
+            sleep: "fa-moon",
+            couple: "fa-heart",
+            social: "fa-users",
+            food: "fa-utensils",
+            leisure: "fa-gamepad",
+            fitness: "fa-running",
+            finance: "fa-wallet",
+            values: "fa-star"
+        };
+        
+        if (user.habits && user.habits.length > 0) {
+            user.habits.forEach(habit => {
+                const habitItem = document.createElement('div');
+                habitItem.className = 'habit-item';
+                
+                // 處理標籤顯示格式
+                let displayName = habit.name;
+                const tagsMatch = habit.name.match(/<([^>]+)>/g);
+                
+                if (tagsMatch) {
+                    // 移除標籤格式，僅顯示純文本
+                    displayName = habit.name.replace(/<[^>]+>/g, '');
+                }
+                
+                habitItem.innerHTML = `
+                    <div class="habit-icon ${habit.category}">
+                        <i class="fas ${icons[habit.category] || 'fa-heart'}"></i>
+                    </div>
+                    <div class="habit-detail">
+                        <div class="habit-title">${displayName}</div>
+                        <div class="habit-desc">${habit.description}</div>
+                        <div class="habit-tags">
+                            ${habit.tags ? habit.tags.map(tag => `<span class="habit-tag">${tag}</span>`).join('') : ''}
+                        </div>
+                    </div>
+                `;
+                habitsList.appendChild(habitItem);
+            });
+        } else {
+            habitsList.innerHTML = '<p>該用戶尚未添加任何習慣</p>';
+        }
+    }
+
+    // 保存用戶信息到本地存儲
+    function saveUserToStorage() {
+        // 獲取現有用戶
+        const users = JSON.parse(localStorage.getItem('habitLabUsers') || '[]');
+        
+        // 檢查用戶是否已存在
+        const existingUserIndex = users.findIndex(user => user.id === currentUser.id);
+        
+        if (existingUserIndex > -1) {
+            // 更新已存在的用戶
+            users[existingUserIndex] = currentUser;
+        } else {
+            // 添加新用戶
+            users.push(currentUser);
+        }
+        
+        // 保存到本地存儲
+        localStorage.setItem('habitLabUsers', JSON.stringify(users));
+    }
+    
+    // 獲取類別圖標
+    function getCategoryIcon(category) {
+        const icons = {
+            lifestyle: "fa-home",
+            sleep: "fa-moon",
+            couple: "fa-heart",
+            social: "fa-users",
+            food: "fa-utensils",
+            leisure: "fa-gamepad",
+            fitness: "fa-running",
+            finance: "fa-wallet",
+            values: "fa-star"
+        };
+        
+        return icons[category] || "fa-heart";
+    }
+    
+    // 獲取頻率文本
+    function getFrequencyText(option) {
+        // 根據選項或標籤判斷頻率
+        if (option.tags.includes('每天') || option.tags.includes('日常')) {
+            return '每天';
+        } else if (option.tags.includes('每週') || option.tags.includes('週末') || option.tags.includes('假日')) {
+            return '每週';
+        } else if (option.tags.includes('每月')) {
+            return '每月';
+        } else if (option.tags.includes('特殊時刻') || option.tags.includes('特別場合') || option.tags.includes('紀念日')) {
+            return '特定日期';
+        } else {
+            return '不定期';
+        }
+    }
+    
+    // 顯示新增標籤輸入框
+    function showAddTagInput(button, event) {
+        // 阻止事件冒泡
+        event.stopPropagation();
+        
+        // 獲取標籤容器
+        const tagsContainer = button.parentElement;
+        
+        // 隱藏新增標籤按鈕
+        button.style.display = 'none';
+        
+        // 獲取或創建輸入框容器
+        let inputContainer = tagsContainer.querySelector('.new-tag-input-container');
+        if (!inputContainer) {
+            inputContainer = document.createElement('div');
+            inputContainer.className = 'new-tag-input-container';
+            inputContainer.innerHTML = `
+                <input type="text" class="new-tag-input" placeholder="輸入標籤文字">
+                <div class="new-tag-buttons">
+                    <button class="new-tag-confirm" onclick="confirmAddTag(this, event)">確定</button>
+                    <button class="new-tag-cancel" onclick="cancelAddTag(this, event)">取消</button>
+                </div>
+            `;
+            tagsContainer.appendChild(inputContainer);
+        }
+        
+        // 顯示輸入框容器
+        inputContainer.style.display = 'flex';
+        
+        // 聚焦到輸入框
+        inputContainer.querySelector('.new-tag-input').focus();
+    }
+    
+    // 確認添加新標籤
+    function confirmAddTag(confirmButton, event) {
+        // 阻止事件冒泡
+        event.stopPropagation();
+        
+        // 獲取輸入框容器和標籤容器
+        const buttonsContainer = confirmButton.parentElement;
+        const inputContainer = buttonsContainer.parentElement;
+        const tagsContainer = inputContainer.parentElement;
+        
+        // 獲取輸入值
+        const tagText = inputContainer.querySelector('.new-tag-input').value.trim();
+        
+        // 如果有輸入內容，創建新標籤
+        if (tagText) {
+            // 創建新標籤
+            const newTag = document.createElement('span');
+            newTag.className = 'tag selected'; // 直接添加selected類，使標籤自動被選中
+            newTag.setAttribute('onclick', 'toggleTag(this, event)');
+            newTag.textContent = tagText;
+            
+            // 添加到標籤容器（在新增標籤按鈕之前）
+            const addTagBtn = tagsContainer.querySelector('.add-tag-btn');
+            tagsContainer.insertBefore(newTag, addTagBtn);
+        }
+        
+        // 隱藏輸入框容器
+        inputContainer.style.display = 'none';
+        
+        // 清空輸入框
+        inputContainer.querySelector('.new-tag-input').value = '';
+        
+        // 顯示新增標籤按鈕
+        tagsContainer.querySelector('.add-tag-btn').style.display = 'inline-block';
+        
+        // 記錄選擇的答案
+        saveAnswers();
+    }
+    
+    // 取消添加新標籤
+    function cancelAddTag(cancelButton, event) {
+        // 阻止事件冒泡
+        event.stopPropagation();
+        
+        // 獲取輸入框容器和標籤容器
+        const buttonsContainer = cancelButton.parentElement;
+        const inputContainer = buttonsContainer.parentElement;
+        const tagsContainer = inputContainer.parentElement;
+        
+        // 隱藏輸入框容器
+        inputContainer.style.display = 'none';
+        
+        // 清空輸入框
+        inputContainer.querySelector('.new-tag-input').value = '';
+        
+        // 顯示新增標籤按鈕
+        tagsContainer.querySelector('.add-tag-btn').style.display = 'inline-block';
+    }
+
+    // 為每個問卷類別添加「其他」選項
+    function addOtherOption(category, questionSet) {
+        // 問題標題
+        const questionCount = questionSet.querySelectorAll('.question').length + 1;
+        const otherQuestionDiv = document.createElement('div');
+        otherQuestionDiv.className = 'question';
+            
+        // 問題標題
+        const otherQuestionHeader = document.createElement('h3');
+        otherQuestionHeader.textContent = `${questionCount}. 其他${getCategoryName(category)}`;
+        otherQuestionDiv.appendChild(otherQuestionHeader);
+        
+        // 添加說明文字
+        const otherInstructionDiv = document.createElement('div');
+        otherInstructionDiv.className = 'options-instruction';
+        otherInstructionDiv.textContent = '* 您可以選擇多個選項';
+        otherQuestionDiv.appendChild(otherInstructionDiv);
+        
+        // 選項容器
+        const otherOptionsDiv = document.createElement('div');
+        otherOptionsDiv.className = 'options';
+        
+        // 其他選項
+        const otherOptionDiv = document.createElement('div');
+        otherOptionDiv.className = 'option';
+        otherOptionDiv.setAttribute('onclick', 'selectOption(this, event)');
+        
+        const otherOptionText = document.createElement('p');
+        otherOptionText.textContent = `請直接填寫其他${getCategoryName(category)}`;
+        otherOptionDiv.appendChild(otherOptionText);
+        
+        // 標籤容器
+        const otherTagsContainer = document.createElement('div');
+        otherTagsContainer.className = 'tags-container';
+        
+        // 添加標籤標題
+        const otherTagLabel = document.createElement('span');
+        otherTagLabel.className = 'tag-label';
+        otherTagLabel.textContent = '添加標籤：';
+        otherTagsContainer.appendChild(otherTagLabel);
+        
+        // 添加新增標籤按鈕
+        const otherAddTagBtn = document.createElement('span');
+        otherAddTagBtn.className = 'add-tag-btn';
+        otherAddTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
+        otherAddTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
+        otherTagsContainer.appendChild(otherAddTagBtn);
+        
+        otherOptionDiv.appendChild(otherTagsContainer);
+        otherOptionsDiv.appendChild(otherOptionDiv);
+        
+        otherQuestionDiv.appendChild(otherOptionsDiv);
+        questionSet.appendChild(otherQuestionDiv);
+    }
+</script>
+
+</body>
+</html> 
