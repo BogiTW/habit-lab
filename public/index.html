@@ -1360,196 +1360,180 @@
     
     // 加載問卷數據
     function loadQuestionnaireData() {
-        // 從本地存儲獲取問卷數據
-        const questionnaires = JSON.parse(localStorage.getItem('habitLabQuestionnaires') || '{}');
-        
-        // 如果沒有數據，則不進行替換
-        if (Object.keys(questionnaires).length === 0) return;
-        
-        // 逐個類別更新問卷
-        Object.keys(questionnaires).forEach(category => {
-            const questionSet = document.getElementById(`${category}-questions`);
-            if (!questionSet) return;
-            
-            // 清空現有問題
-            questionSet.innerHTML = '';
-            
-            // 逐個添加問題
-            questionnaires[category].forEach((question, index) => {
-                const questionDiv = document.createElement('div');
-                questionDiv.className = 'question';
+        // 優先從伺服器獲取問卷數據
+        fetchQuestionnaireData()
+            .then(data => {
+                // 如果成功獲取數據，則處理數據
+                console.log("成功從伺服器獲取問卷數據");
+                processQuestionnaireData(data);
+            })
+            .catch(err => {
+                console.error("從伺服器獲取問卷數據失敗:", err);
                 
-                // 問題標題
-                const questionHeader = document.createElement('h3');
-                questionHeader.textContent = `${index + 1}. ${question.text}`;
-                questionDiv.appendChild(questionHeader);
+                // 如果從伺服器獲取失敗，嘗試從本地存儲獲取
+                const questionnaires = JSON.parse(localStorage.getItem('habitLabQuestionnaires') || '{}');
                 
-                // 添加說明文字
-                const instructionDiv = document.createElement('div');
-                instructionDiv.className = 'options-instruction';
-                instructionDiv.textContent = '* 您可以選擇多個選項';
-                questionDiv.appendChild(instructionDiv);
-                
-                // 選項容器
-                const optionsDiv = document.createElement('div');
-                optionsDiv.className = 'options';
-                
-                // 添加選項
-                question.options.forEach(option => {
-                    const optionDiv = document.createElement('div');
-                    optionDiv.className = 'option';
-                    optionDiv.setAttribute('onclick', 'selectOption(this, event)');
-                    
-                    const optionText = document.createElement('p');
-                    optionText.textContent = option.text;
-                    optionDiv.appendChild(optionText);
-                    
-                    // 標籤容器
-                    const tagsContainer = document.createElement('div');
-                    tagsContainer.className = 'tags-container';
-                    
-                    // 添加標籤標題
-                    const tagLabel = document.createElement('span');
-                    tagLabel.className = 'tag-label';
-                    tagLabel.textContent = '添加標籤：';
-                    tagsContainer.appendChild(tagLabel);
-                    
-                    // 添加標籤選項
-                    if (option.tags && option.tags.length > 0) {
-                        option.tags.forEach(tag => {
-                            const tagSpan = document.createElement('span');
-                            tagSpan.className = 'tag';
-                            tagSpan.setAttribute('onclick', 'toggleTag(this, event)');
-                            tagSpan.textContent = tag;
-                            tagsContainer.appendChild(tagSpan);
-                        });
-                    }
-                    
-                    // 添加新增標籤按鈕
-                    const addTagBtn = document.createElement('span');
-                    addTagBtn.className = 'add-tag-btn';
-                    addTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
-                    addTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
-                    tagsContainer.appendChild(addTagBtn);
-                    
-                    optionDiv.appendChild(tagsContainer);
-                    optionsDiv.appendChild(optionDiv);
-                });
-                
-                // 添加「其他」選項作為每個問題選項列表的最後一個選項
-                const otherOptionDiv = document.createElement('div');
-                otherOptionDiv.className = 'option';
-                otherOptionDiv.setAttribute('onclick', 'selectOption(this, event)');
-                otherOptionDiv.style.backgroundColor = '#fff0f6'; // 淺粉色背景，使其突出顯示
-                
-                const otherOptionText = document.createElement('p');
-                otherOptionText.textContent = `其他 (文字說明)`;
-                otherOptionDiv.appendChild(otherOptionText);
-                
-                // 標籤容器
-                const otherTagsContainer = document.createElement('div');
-                otherTagsContainer.className = 'tags-container';
-                
-                // 添加標籤標題
-                const otherTagLabel = document.createElement('span');
-                otherTagLabel.className = 'tag-label';
-                otherTagLabel.textContent = '添加標籤：';
-                otherTagsContainer.appendChild(otherTagLabel);
-                
-                // 添加新增標籤按鈕
-                const otherAddTagBtn = document.createElement('span');
-                otherAddTagBtn.className = 'add-tag-btn';
-                otherAddTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
-                otherAddTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
-                otherTagsContainer.appendChild(otherAddTagBtn);
-                
-                otherOptionDiv.appendChild(otherTagsContainer);
-                optionsDiv.appendChild(otherOptionDiv);
-                
-                questionDiv.appendChild(optionsDiv);
-                questionSet.appendChild(questionDiv);
+                // 如果有本地數據，則處理數據
+                if (Object.keys(questionnaires).length > 0) {
+                    console.log("使用本地存儲的問卷數據");
+                    processQuestionnaireData(questionnaires);
+                } else {
+                    console.log("沒有可用的問卷數據");
+                }
             });
-            
-            // 為每個問卷類別添加「其他」選項問題
-            addOtherOption(category, questionSet);
+    }
+    
+    // 從伺服器獲取問卷數據
+    function fetchQuestionnaireData() {
+        return new Promise((resolve, reject) => {
+            fetch('/api/questionnaires')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('伺服器響應錯誤: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // 保存到本地存儲
+                    localStorage.setItem('habitLabQuestionnaires', JSON.stringify(data));
+                    resolve(data);
+                })
+                .catch(error => {
+                    console.error('獲取問卷數據失敗:', error);
+                    reject(error);
+                });
         });
     }
     
-    // 獲取問卷類別的中文名稱
-    function getCategoryName(category) {
-        const categoryNames = {
-            lifestyle: "生活習慣",
-            sleep: "睡眠習慣",
-            couple: "情侶互動習慣",
-            social: "人際相處習慣",
-            food: "飲食習慣",
-            leisure: "休閒習慣",
-            fitness: "運動習慣",
-            finance: "理財與消費習慣",
-            values: "價值觀跟信念"
-        };
-        
-        return categoryNames[category] || "習慣";
-    }
-
-    // 顯示習慣列表
-    function showHabitsList() {
-        // 獲取用戶選擇的答案
-        const answers = currentUser.answers;
-        
-        // 清空習慣列表
-        const habitsList = document.getElementById('habits-list');
-        habitsList.innerHTML = '';
-        
-        // 如果沒有答案，則顯示提示
-        if (!answers || answers.length === 0) {
-            habitsList.innerHTML = '<p class="no-habits">您還沒有選擇任何習慣，請回到問卷填寫。</p>';
+    // 處理問卷數據，更新頁面內容
+    function processQuestionnaireData(questionnaires) {
+        // 如果沒有數據，則不進行替換
+        if (Object.keys(questionnaires).length === 0) {
+            console.log("問卷數據為空");
             return;
         }
         
-        // 逐個顯示習慣
-        answers.forEach(answer => {
-            answer.options.forEach(option => {
-                // 獲取標籤文本
-                const tagsHTML = option.tags.length > 0 ? 
-                    option.tags.map(tag => `<span class="habit-tag">${tag}</span>`).join('') : '';
+        console.log("處理問卷數據:", questionnaires);
+        
+        // 逐個類別更新問卷
+        if (questionnaires.questions) {
+            // 如果數據是 {questions: [...]} 格式
+            const questions = questionnaires.questions;
+            
+            // 將問題按類別分組
+            const categorizedQuestions = {
+                lifestyle: [],
+                sleep: [],
+                couple: [],
+                social: [],
+                food: [],
+                leisure: [],
+                fitness: [],
+                finance: [],
+                values: []
+            };
+            
+            // 根據問題ID或標題來分類
+            questions.forEach(question => {
+                // 根據問題標題判斷類別
+                let category = 'lifestyle'; // 默認類別
                 
-                // 生成習慣項目
-                const habitItem = document.createElement('div');
-                habitItem.className = 'habit-item';
+                const title = question.title.toLowerCase();
+                if (title.includes('睡眠')) {
+                    category = 'sleep';
+                } else if (title.includes('情侶') || title.includes('互動') || title.includes('相處')) {
+                    category = 'couple';
+                } else if (title.includes('人際') || title.includes('社交')) {
+                    category = 'social';
+                } else if (title.includes('飲食') || title.includes('食物')) {
+                    category = 'food';
+                } else if (title.includes('休閒') || title.includes('娛樂')) {
+                    category = 'leisure';
+                } else if (title.includes('運動') || title.includes('健身')) {
+                    category = 'fitness';
+                } else if (title.includes('理財') || title.includes('消費')) {
+                    category = 'finance';
+                } else if (title.includes('價值觀') || title.includes('信念')) {
+                    category = 'values';
+                } else if (title.includes('生活') || title.includes('習慣')) {
+                    category = 'lifestyle';
+                }
                 
-                // 為了在後台顯示格式為 "選項<標籤>"，我們需要將此格式保存到習慣的名稱中
-                const habitNameWithTags = option.tags.length > 0 ? 
-                    `${option.text}<${option.tags.join('><')}>` : option.text;
-                
-                habitItem.innerHTML = `
-                    <div class="habit-icon ${answer.category || 'lifestyle'}">
-                        <i class="fas ${getCategoryIcon(answer.category)}"></i>
-                    </div>
-                    <div class="habit-detail">
-                        <div class="habit-title">${option.text}</div>
-                        <div class="habit-desc">${answer.questionText}</div>
-                        <div class="habit-tags">${tagsHTML}</div>
-                    </div>
-                `;
-                
-                // 將習慣添加到列表
-                habitsList.appendChild(habitItem);
-                
-                // 添加到用戶習慣數組
-                currentUser.habits.push({
-                    category: answer.category || 'lifestyle',
-                    name: habitNameWithTags, // 使用帶標籤的名稱格式
-                    description: answer.questionText,
-                    tags: option.tags
+                // 將問題添加到對應類別
+                categorizedQuestions[category].push({
+                    text: question.title,
+                    options: getOptionsFromQuestion(question)
                 });
             });
-        });
-        
-        // 保存用戶信息到本地存儲
-        saveUserToStorage();
+            
+            // 更新每個類別的問卷內容
+            Object.keys(categorizedQuestions).forEach(category => {
+                updateQuestionnaireCategory(category, categorizedQuestions[category]);
+            });
+            
+        } else {
+            // 如果數據是舊格式，直接處理
+            Object.keys(questionnaires).forEach(category => {
+                updateQuestionnaireCategory(category, questionnaires[category]);
+            });
+        }
     }
-
+    
+    // 從問題對象中提取選項
+    function getOptionsFromQuestion(question) {
+        let options = [];
+        
+        // 如果問題有 sections，則從 sections 中獲取選項
+        if (question.sections && question.sections.length > 0) {
+            question.sections.forEach(section => {
+                if (section.options && section.options.length > 0) {
+                    const sectionOptions = section.options.map(option => {
+                        // 提取標籤
+                        const tags = extractTags(option);
+                        return {
+                            text: cleanOptionText(option),
+                            tags: tags
+                        };
+                    });
+                    options = options.concat(sectionOptions);
+                }
+            });
+        } 
+        // 如果問題直接有 options，則直接獲取
+        else if (question.options && question.options.length > 0) {
+            options = question.options.map(option => {
+                // 提取標籤
+                const tags = extractTags(option);
+                return {
+                    text: cleanOptionText(option),
+                    tags: tags
+                };
+            });
+        }
+        
+        return options;
+    }
+    
+    // 從選項文本中提取標籤
+    function extractTags(optionText) {
+        const tags = [];
+        // 匹配 <標籤> 格式的標籤
+        const tagMatches = String(optionText).match(/<([^>]+)>/g);
+        if (tagMatches) {
+            tagMatches.forEach(tagMatch => {
+                // 移除 < 和 > 字符
+                const tag = tagMatch.substring(1, tagMatch.length - 1);
+                tags.push(tag);
+            });
+        }
+        return tags;
+    }
+    
+    // 清理選項文本，移除標籤
+    function cleanOptionText(optionText) {
+        return String(optionText).replace(/<[^>]+>/g, '').trim();
+    }
+    
     // 填充用戶詳情
     function fillUserDetail(user) {
         // 填充用戶基本信息
@@ -1820,6 +1804,131 @@
         
         otherQuestionDiv.appendChild(otherOptionsDiv);
         questionSet.appendChild(otherQuestionDiv);
+    }
+
+    // 更新問卷類別內容
+    function updateQuestionnaireCategory(category, questions) {
+        const questionSet = document.getElementById(`${category}-questions`);
+        if (!questionSet) return;
+        
+        // 清空現有問題
+        questionSet.innerHTML = '';
+        
+        // 逐個添加問題
+        questions.forEach((question, index) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question';
+            
+            // 問題標題
+            const questionHeader = document.createElement('h3');
+            questionHeader.textContent = `${index + 1}. ${question.text}`;
+            questionDiv.appendChild(questionHeader);
+            
+            // 添加說明文字
+            const instructionDiv = document.createElement('div');
+            instructionDiv.className = 'options-instruction';
+            instructionDiv.textContent = '* 您可以選擇多個選項';
+            questionDiv.appendChild(instructionDiv);
+            
+            // 選項容器
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'options';
+            
+            // 添加選項
+            question.options.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.setAttribute('onclick', 'selectOption(this, event)');
+                
+                const optionText = document.createElement('p');
+                optionText.textContent = option.text;
+                optionDiv.appendChild(optionText);
+                
+                // 標籤容器
+                const tagsContainer = document.createElement('div');
+                tagsContainer.className = 'tags-container';
+                
+                // 添加標籤標題
+                const tagLabel = document.createElement('span');
+                tagLabel.className = 'tag-label';
+                tagLabel.textContent = '添加標籤：';
+                tagsContainer.appendChild(tagLabel);
+                
+                // 添加標籤選項
+                if (option.tags && option.tags.length > 0) {
+                    option.tags.forEach(tag => {
+                        const tagSpan = document.createElement('span');
+                        tagSpan.className = 'tag';
+                        tagSpan.setAttribute('onclick', 'toggleTag(this, event)');
+                        tagSpan.textContent = tag;
+                        tagsContainer.appendChild(tagSpan);
+                    });
+                }
+                
+                // 添加新增標籤按鈕
+                const addTagBtn = document.createElement('span');
+                addTagBtn.className = 'add-tag-btn';
+                addTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
+                addTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
+                tagsContainer.appendChild(addTagBtn);
+                
+                optionDiv.appendChild(tagsContainer);
+                optionsDiv.appendChild(optionDiv);
+            });
+            
+            // 添加「其他」選項作為每個問題選項列表的最後一個選項
+            const otherOptionDiv = document.createElement('div');
+            otherOptionDiv.className = 'option';
+            otherOptionDiv.setAttribute('onclick', 'selectOption(this, event)');
+            otherOptionDiv.style.backgroundColor = '#fff0f6'; // 淺粉色背景，使其突出顯示
+            
+            const otherOptionText = document.createElement('p');
+            otherOptionText.textContent = `其他 (文字說明)`;
+            otherOptionDiv.appendChild(otherOptionText);
+            
+            // 標籤容器
+            const otherTagsContainer = document.createElement('div');
+            otherTagsContainer.className = 'tags-container';
+            
+            // 添加標籤標題
+            const otherTagLabel = document.createElement('span');
+            otherTagLabel.className = 'tag-label';
+            otherTagLabel.textContent = '添加標籤：';
+            otherTagsContainer.appendChild(otherTagLabel);
+            
+            // 添加新增標籤按鈕
+            const otherAddTagBtn = document.createElement('span');
+            otherAddTagBtn.className = 'add-tag-btn';
+            otherAddTagBtn.setAttribute('onclick', 'showAddTagInput(this, event)');
+            otherAddTagBtn.innerHTML = '<i class="fas fa-plus"></i> 新增標籤';
+            otherTagsContainer.appendChild(otherAddTagBtn);
+            
+            otherOptionDiv.appendChild(otherTagsContainer);
+            optionsDiv.appendChild(otherOptionDiv);
+            
+            questionDiv.appendChild(optionsDiv);
+            questionSet.appendChild(questionDiv);
+        });
+        
+        // 為每個問卷類別添加「其他」選項問題
+        addOtherOption(category, questionSet);
+    }
+
+    // 獲取問卷類別的中文名稱
+    function getCategoryName(category) {
+        const categoryNames = {
+            lifestyle: "生活習慣",
+            sleep: "睡眠習慣",
+            couple: "情侶互動習慣",
+            social: "人際相處習慣",
+            food: "飲食習慣",
+            leisure: "休閒習慣",
+            fitness: "運動習慣",
+            finance: "理財與消費習慣",
+            values: "價值觀跟信念"
+        };
+        
+        return categoryNames[category] || "習慣";
     }
 </script>
 
